@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Managerial Squirrel</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <script type="importmap">
+      {
+        "imports": {
+          "preact": "https://esm.sh/preact@10.19.2",
+          "@preact/signals": "https://esm.sh/@preact/signals@1.2.1",
+          "htm/preact": "https://esm.sh/htm@3.1.1/preact?external=preact",
+          "confetti": "https://esm.sh/canvas-confetti@1.6.0"
+        }
+      }
+    </script>
+
+    <script type="module">
+      import { render } from 'preact';
+      import { signal, effect } from '@preact/signals';
+      import { html } from 'htm/preact';
+      import confetti from 'confetti';
+
+      const snow = () => {
+        const duration = 60 * 1000;
+        const animationEnd = Date.now() + duration;
+        let skew = 1;
+
+        function randomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        (function frame() {
+          const timeLeft = animationEnd - Date.now();
+          const ticks = Math.max(200, 500 * (timeLeft / duration));
+          skew = Math.max(0.8, skew - 0.001);
+
+          confetti({
+            particleCount: 1,
+            startVelocity: 0,
+            ticks: ticks,
+            origin: {
+              x: Math.random(),
+              // since particles fall down, skew start toward the top
+              y: (Math.random() * skew) - 0.2
+            },
+            colors: ['#ffffff'],
+            shapes: ['circle'],
+            gravity: randomInRange(0.4, 0.6),
+            scalar: randomInRange(0.4, 1),
+            drift: randomInRange(-0.4, 0.4)
+          });
+
+          if (timeLeft > 0) {
+            requestAnimationFrame(frame);
+          }
+        }());
+      }
+
+      const createStore = (initialState) => {
+        const state = {
+          ...initialState,
+          ...JSON.parse(localStorage.store || null),
+        }
+
+        const store = signal(state);
+
+        effect(() => {
+          localStorage.store = JSON.stringify(store.value);
+        });
+
+        return store;
+      }
+
+      const store = createStore({
+        stage: "login",
+        records: [
+          { name: "", department: "", status: "unchecked" },
+          { name: "", department: "", status: "unchecked" },
+          { name: "", department: "", status: "unchecked" },
+          { name: "", department: "", status: "unchecked" },
+        ],
+      })
+
+      const LoginScreen = () => {
+        const onSubmit = (e) => {
+          e.preventDefault();
+
+          const pin = e.target.pin.value.trim();
+
+          if (pin !== '1234') {
+            return;
+          }
+
+          store.value = {
+            ...store.value,
+            stage: "elves",
+          }
+        }
+
+        return html`
+          <div>Login</div>
+          <form onSubmit=${(e) => onSubmit(e)}>
+            <div class="mb-3">
+              <label for="pin" class="form-label">PIN</label>
+              <input type="text" class="form-control" id="pin" pattern="[0-9]{4}" length="4" required />
+            </div>
+
+            <div class="col-12">
+              <button class="btn btn-primary" type="submit">Submit form</button>
+            </div>
+          </form>
+        `;
+      }
+
+      const ElfNames = [
+        "",
+        "Merry",
+        "Pippen",
+        "Buck",
+      ];
+
+      const DepartmentNames = [
+        "",
+        "Stables",
+        "Toys",
+        "Tailoring",
+      ];
+
+      const CorrectAnswers = [
+        "Buck-Toys",
+      ]
+
+      const ElvesScreen = () => {
+        const onSubmit = (e) => {
+          e.preventDefault();
+
+          const records = store.value.records;
+
+          // Update the records from the form.
+          for (const element of e.target.elements) {
+            const [field, index] = element.id.split('_');
+
+            if (!field) { continue; }
+
+            records[Number(index)][field] = element.value;
+          }
+
+          // Check records for correct answers.
+          for (const answer of CorrectAnswers) {
+            const found = records.find((record) => `${record.name}-${record.department}` === answer)
+
+            if (found) {
+              found.status = "correct";
+            }
+          }
+
+          // Check if all answers are correct.
+          const allCorrect = records.every((record) => record.status === "correct")
+
+          store.value = {
+            ...store.value,
+            records: records,
+            stage: allCorrect ? "done" : store.value.stage,
+          }
+        }
+
+        return html`
+          <div>Personelf</div>
+          <form onSubmit=${(e) => onSubmit(e)}>
+            ${store.value.records.map((record, index, records) => {
+              return html`
+                <div class="mb-3">
+                  <label for="name_${index}" class="form-label">Elf</label>
+                  <div class="input-group">
+                    <select class="form-control" id="name_${index}">
+                      ${ElfNames.map((name) => {
+                        return html`
+                          <option selected=${record.name === name}>${name}</option>
+                        `;
+                      })}
+                    </select>
+                    <span class="input-group-text">@</span>
+                    <select class="form-control" id="department_${index}">
+                      ${DepartmentNames.map((name) => {
+                        return html`
+                          <option selected=${record.department === name}>${name}</option>
+                        `;
+                      })}
+                    </select>
+                  </div>
+                </div>
+              `;
+            })}
+
+            <div class="col-12">
+              <button class="btn btn-primary" type="submit">Submit form</button>
+            </div>
+          </form>
+        `;
+      }
+
+      const WinScreen = () => {
+        snow();
+        return html`<div>Winner!</div>`;
+      }
+
+      const App = () => {
+        if (store.value.stage === 'elves') {
+          return html`
+            <${ElvesScreen} />
+          `;
+        } else if (store.value.stage === 'done') {
+          return html`
+            <${WinScreen} />
+          `;
+        } else {
+          return html`
+            <${LoginScreen} />
+          `;
+        }
+      }
+
+      render(html`<${App} />`, document.getElementById("content-body"));
+    </script>
+  </head>
+
+  <body>
+    <main>
+      <div class="container">
+        <header>
+          <img src="logo.png" alt="Managerial Squirrel" width="400" />
+        </header>
+      </div>
+
+      <div id="content-body" class="container">
+      </div>
+    </main>
+  </body>
+</html>
