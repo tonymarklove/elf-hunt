@@ -8,6 +8,33 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Roboto+Serif&display=swap');
+
+      body {
+        font-family: 'Roboto Serif', serif;
+      }
+
+      header {
+        background-color: rgb(252 252 252);
+        text-align: center;
+      }
+
+      header img {
+        display: inline-block;
+        max-width: 320px;
+      }
+
+      .form-signin {
+        max-width: 330px;
+        padding: 1rem;
+      }
+
+      .table {
+        --bs-table-bg: var(--bg-body-tertiary);
+      }
+    </style>
+
     <script type="importmap">
       {
         "imports": {
@@ -36,7 +63,7 @@
 
         (function frame() {
           const timeLeft = animationEnd - Date.now();
-          const ticks = Math.max(200, 500 * (timeLeft / duration));
+          const ticks = Math.max(50, 125 * (timeLeft / duration));
           skew = Math.max(0.8, skew - 0.001);
 
           confetti({
@@ -77,6 +104,8 @@
       }
 
       const store = createStore({
+        startTime: (new Date).toJSON(),
+        endTime: null,
         stage: "login",
         records: [
           { name: "", department: "", status: "unchecked" },
@@ -92,7 +121,7 @@
 
           const pin = e.target.pin.value.trim();
 
-          if (pin !== '1234') {
+          if (pin !== '6457') {
             return;
           }
 
@@ -103,17 +132,24 @@
         }
 
         return html`
-          <div>Login</div>
-          <form onSubmit=${(e) => onSubmit(e)}>
-            <div class="mb-3">
-              <label for="pin" class="form-label">PIN</label>
-              <input type="text" class="form-control" id="pin" pattern="[0-9]{4}" length="4" required />
-            </div>
+          <header class="py-2">
+            <img src="logo.png" alt="Managerial Squirrel" width="80%" />
+          </header>
 
-            <div class="col-12">
-              <button class="btn btn-primary" type="submit">Submit form</button>
-            </div>
-          </form>
+          <div class="form-signin w-100 m-auto my-5">
+            <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+
+            <form onSubmit=${(e) => onSubmit(e)}>
+              <div class="form-floating">
+                <input type="text" class="form-control" id="pin" pattern="[0-9]{4}" length="4" required placeholder="PIN" />
+                <label for="pin" class="form-label">PIN</label>
+              </div>
+
+              <div class="col-12 mt-3">
+                <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+              </div>
+            </form>
+          </div>
         `;
       }
 
@@ -150,6 +186,14 @@
             records[Number(index)][field] = element.value;
           }
 
+          for (const record of records) {
+            if (record.name && record.department) {
+              record.status = "invalid";
+            } else {
+              record.status = "unchecked";
+            }
+          }
+
           // Check records for correct answers.
           for (const answer of CorrectAnswers) {
             const found = records.find((record) => `${record.name}-${record.department}` === answer)
@@ -160,53 +204,99 @@
           }
 
           // Check if all answers are correct.
-          const allCorrect = records.every((record) => record.status === "correct")
+          // const allCorrect = records.every((record) => record.status === "correct")
+
+          const allCorrect = true;
 
           store.value = {
             ...store.value,
             records: records,
             stage: allCorrect ? "done" : store.value.stage,
+            endTime: allCorrect ? (new Date).toJSON() : store.value.endTime,
           }
         }
 
         return html`
-          <div>Personelf</div>
-          <form onSubmit=${(e) => onSubmit(e)}>
-            ${store.value.records.map((record, index, records) => {
-              return html`
-                <div class="mb-3">
-                  <label for="name_${index}" class="form-label">Elf</label>
-                  <div class="input-group">
-                    <select class="form-control" id="name_${index}">
-                      ${ElfNames.map((name) => {
-                        return html`
-                          <option selected=${record.name === name}>${name}</option>
-                        `;
-                      })}
-                    </select>
-                    <span class="input-group-text">@</span>
-                    <select class="form-control" id="department_${index}">
-                      ${DepartmentNames.map((name) => {
-                        return html`
-                          <option selected=${record.department === name}>${name}</option>
-                        `;
-                      })}
-                    </select>
-                  </div>
-                </div>
-              `;
-            })}
+          <header class="py-2">
+            <img src="logo.png" alt="Managerial Squirrel" width="80%" />
+          </header>
 
-            <div class="col-12">
-              <button class="btn btn-primary" type="submit">Submit form</button>
+          <div class="my-3">
+            <div class="text-center">
+              <h1 class="display-5">Personelf File</h1>
             </div>
-          </form>
+            <form onSubmit=${(e) => onSubmit(e)}>
+              <table class="table table-sm bg-body-tertiary">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Department</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  ${store.value.records.map((record, index, records) => {
+                    const classes = ["form-select"];
+
+                    if (record.status === "invalid") classes.push("is-invalid");
+                    if (record.status === "correct") classes.push("is-valid");
+
+                    const props = { class: classes.join(" ") };
+
+                    return html`
+                      <tr>
+                        <td>
+                          <select id="name_${index}" ...${props}>
+                            ${ElfNames.map((name) => {
+                              return html`
+                                <option selected=${record.name === name}>${name}</option>
+                              `;
+                            })}
+                          </select>
+                        </td>
+                        <td>
+                          <select id="department_${index}" ...${props}>
+                            ${DepartmentNames.map((name) => {
+                              return html`
+                                <option selected=${record.department === name}>${name}</option>
+                              `;
+                            })}
+                          </select>
+                        </td>
+                      </tr>
+                    `;
+                  })}
+                </tbody>
+              </table>
+
+              <div class="container">
+                <button class="btn btn-primary w-100 py-2" type="submit">Save</button>
+              </div>
+            </form>
+          </div>
         `;
       }
 
       const WinScreen = () => {
         snow();
-        return html`<div>Winner!</div>`;
+
+        const startTime = new Date(store.value.startTime);
+        const endTime = new Date(store.value.endTime);
+
+        let msec = endTime - startTime;
+
+        const hh = Math.floor(msec / 1000 / 60 / 60);
+        msec -= hh * 1000 * 60 * 60;
+        const mm = Math.floor(msec / 1000 / 60);
+        msec -= mm * 1000 * 60;
+        const ss = Math.floor(msec / 1000);
+
+        return html`
+          <div class="d-flex align-items-center" style="height: 100vh; background-color: rgb(0 15 34);">
+            <img src="christmas_is_saved.jpg" width="100%" />
+            <span>${hh}:${mm}:${ss}</span>
+          </div>
+        `;
       }
 
       const App = () => {
@@ -229,15 +319,9 @@
     </script>
   </head>
 
-  <body>
+  <body class="bg-body-tertiary">
     <main>
-      <div class="container">
-        <header>
-          <img src="logo.png" alt="Managerial Squirrel" width="400" />
-        </header>
-      </div>
-
-      <div id="content-body" class="container">
+      <div id="content-body">
       </div>
     </main>
   </body>
