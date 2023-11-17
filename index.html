@@ -291,10 +291,19 @@
         msec -= mm * 1000 * 60;
         const ss = Math.floor(msec / 1000);
 
+        const timeElements = [];
+
+        if (hh > 0) { timeElements.push(`${hh} hour`); }
+        if (mm > 0) { timeElements.push(`${mm} minutes and`); }
+
+        timeElements.push(`${ss} seconds`);
+
         return html`
           <div class="d-flex align-items-center" style="height: 100vh; background-color: rgb(0 15 34);">
-            <img src="christmas_is_saved.jpg" width="100%" />
-            <span>${hh}:${mm}:${ss}</span>
+            <div class="text-center">
+              <img src="christmas_is_saved.jpg" width="100%" />
+              <div>Your time:<br />${timeElements.join(" ")}</div>
+            </div>
           </div>
         `;
       }
