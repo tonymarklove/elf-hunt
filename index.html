@@ -39,6 +39,7 @@
       {
         "imports": {
           "preact": "https://esm.sh/preact@10.19.2",
+          "preact/": "https://esm.sh/preact@10.19.2/",
           "@preact/signals": "https://esm.sh/@preact/signals@1.2.1",
           "htm/preact": "https://esm.sh/htm@3.1.1/preact?external=preact",
           "confetti": "https://esm.sh/canvas-confetti@1.6.0"
@@ -48,6 +49,7 @@
 
     <script type="module">
       import { render } from 'preact';
+      import { useState } from 'preact/hooks';
       import { signal, effect } from '@preact/signals';
       import { html } from 'htm/preact';
       import confetti from 'confetti';
@@ -116,12 +118,15 @@
       })
 
       const LoginScreen = () => {
+        const [invalid, setInvalid] = useState(false);
+
         const onSubmit = (e) => {
           e.preventDefault();
 
           const pin = e.target.pin.value.trim();
 
           if (pin !== '6457') {
+            setInvalid(true);
             return;
           }
 
@@ -130,6 +135,12 @@
             stage: "elves",
           }
         }
+
+        const classes = ["form-control"];
+
+        if (invalid) classes.push("is-invalid");
+
+        const props = { class: classes.join(" ") };
 
         return html`
           <header class="py-2">
@@ -141,7 +152,7 @@
 
             <form onSubmit=${(e) => onSubmit(e)}>
               <div class="form-floating">
-                <input type="text" class="form-control" id="pin" pattern="[0-9]{4}" length="4" required placeholder="PIN" />
+                <input type="text" id="pin" pattern="[0-9]{4}" length="4" required placeholder="PIN" ...${props} />
                 <label for="pin" class="form-label">PIN</label>
               </div>
 
@@ -155,9 +166,26 @@
 
       const ElfNames = [
         "",
+        "Belle",
+        "Candy",
+        "Cookie",
+        "Dasher",
+        "Frosty",
+        "Ginger",
+        "Holly",
+        "Jolly",
+        "Luna",
         "Merry",
-        "Pippen",
-        "Buck",
+        "Nicky",
+        "Pepper",
+        "Puffy",
+        "Rosy",
+        "Rudy",
+        "Snowy",
+        "Sparky",
+        "Tinsel",
+        "Twinkle",
+        "Zippy",
       ];
 
       const DepartmentNames = [
@@ -204,9 +232,7 @@
           }
 
           // Check if all answers are correct.
-          // const allCorrect = records.every((record) => record.status === "correct")
-
-          const allCorrect = true;
+          const allCorrect = records.every((record) => record.status === "correct")
 
           store.value = {
             ...store.value,
@@ -223,7 +249,7 @@
 
           <div class="my-3">
             <div class="text-center">
-              <h1 class="display-5">Personelf File</h1>
+              <h1 class="display-5">Personnelf File</h1>
             </div>
             <form onSubmit=${(e) => onSubmit(e)}>
               <table class="table table-sm bg-body-tertiary">
