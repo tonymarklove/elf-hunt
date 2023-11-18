@@ -54,6 +54,13 @@
       import { html } from 'htm/preact';
       import confetti from 'confetti';
 
+      const urlParams = new URLSearchParams(window.location.search);
+
+      if (urlParams.get('reset') !== null) {
+        localStorage.removeItem("store");
+        location.replace(location.pathname);
+      }
+
       const snow = () => {
         const duration = 60 * 1000;
         const animationEnd = Date.now() + duration;
