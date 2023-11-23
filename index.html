@@ -35,24 +35,12 @@
       }
     </style>
 
-    <script type="importmap">
-      {
-        "imports": {
-          "preact": "https://esm.sh/preact@10.19.2",
-          "preact/": "https://esm.sh/preact@10.19.2/",
-          "@preact/signals": "https://esm.sh/@preact/signals@1.2.1",
-          "htm/preact": "https://esm.sh/htm@3.1.1/preact?external=preact",
-          "confetti": "https://esm.sh/canvas-confetti@1.6.0"
-        }
-      }
-    </script>
-
     <script type="module">
-      import { render } from 'preact';
-      import { useState } from 'preact/hooks';
-      import { signal, effect } from '@preact/signals';
-      import { html } from 'htm/preact';
-      import confetti from 'confetti';
+      import { render } from 'https://esm.sh/preact@10.19.2';
+      import { useState } from 'https://esm.sh/preact@10.19.2/hooks';
+      import { signal, effect } from 'https://esm.sh/@preact/signals@1.2.1';
+      import { html } from "https://esm.sh/htm@3.1.1/preact";
+      import confetti from 'https://esm.sh/canvas-confetti@1.6.0';
 
       const urlParams = new URLSearchParams(window.location.search);
 
