@@ -32,6 +32,7 @@
 
       .table {
         --bs-table-bg: var(--bg-body-tertiary);
+        table-layout: fixed;
       }
     </style>
 
@@ -178,6 +179,7 @@
         "Rudy",
         "Snowy",
         "Sparky",
+        "Tiddlywinks",
         "Tinsel",
         "Twinkle",
         "Zippy",
@@ -185,13 +187,28 @@
 
       const DepartmentNames = [
         "",
-        "Stables",
-        "Toys",
-        "Tailoring",
+        "Aurora Light Design",
+        "Bakery",
+        "Catering",
+        "Cleaning",
+        "Fizzy-O",
+        "Frostbite First Aid",
+        "Gift Wrapping",
+        "North Pole Post Office",
+        "Sack Filling",
+        "Sleigh Maintenance",
+        "Snowman Sculpture",
+        "Reindeer Stables",
+        "Suit Tailoring",
+        "Toy Design",
+        "Wreath Horticulture",
       ];
 
       const CorrectAnswers = [
-        "Buck-Toys",
+        "Tinsel/Reindeer Stables",
+        "Holly/Bakery",
+        "Tiddlywinks/Fizzy-O",
+        "Frosty/Suit Tailoring",
       ]
 
       const ElvesScreen = () => {
@@ -219,7 +236,7 @@
 
           // Check records for correct answers.
           for (const answer of CorrectAnswers) {
-            const found = records.find((record) => `${record.name}-${record.department}` === answer)
+            const found = records.find((record) => `${record.name}/${record.department}` === answer)
 
             if (found) {
               found.status = "correct";
